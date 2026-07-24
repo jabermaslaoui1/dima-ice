@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DIMA ICE — Monthly Automation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --oak-light:#C9A171;
+    --oak:#9C7040;
+    --oak-dark:#4E3016;
+    --walnut:#2A1B10;
+    --walnut-soft:#3C2817;
+    --forest:#3E5C3A;
+    --forest-dark:#2A4027;
+    --forest-light:#7A9868;
+    --stone:#B7B0A6;
+    --stone-dark:#8C857A;
+    --cream:#F3ECDD;
+    --cream-white:#FBF7EF;
+    --ok:#5FA875;
+    --err:#C85A4E;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0; padding:0; min-height:100%;}
+
+  body{
+    font-family:'Manrope', sans-serif;
+    color:var(--walnut);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:36px 16px;
+    background-color:var(--oak);
+    background-image:
+      repeating-linear-gradient(90deg,
+        var(--oak-light) 0 24px,
+        var(--oak-dark) 24px 26px,
+        var(--oak) 26px 50px,
+        var(--oak-dark) 50px 52px);
+    background-attachment:fixed;
+  }
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:radial-gradient(ellipse at 50% 30%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.25) 100%);
+    pointer-events:none;
+    z-index:0;
+  }
+
+  .card{
+    position:relative;
+    z-index:1;
+    width:100%;
+    max-width:440px;
+    background:var(--cream);
+    border-radius:18px;
+    box-shadow:0 30px 70px -20px rgba(0,0,0,0.55), 0 0 0 1px rgba(0,0,0,0.08);
+    overflow:hidden;
+  }
+
+  /* header */
+  .header{
+    position:relative;
+    padding:34px 24px 26px;
+    background:linear-gradient(180deg, var(--walnut-soft), var(--walnut));
+    text-align:center;
+  }
+
+  .badge{ width:72px; height:72px; margin:0 auto 12px; display:block; }
+
+  .brand{
+    font-family:'Zilla Slab', serif;
+    font-weight:700;
+    font-size:26px;
+    letter-spacing:1.5px;
+    color:var(--cream-white);
+    margin:0;
+  }
+  .tagline{
+    margin:6px 0 0;
+    font-size:11.5px;
+    font-weight:600;
+    color:var(--stone);
+    letter-spacing:1.6px;
+    text-transform:uppercase;
+  }
+
+  /* body */
+  .body{ padding:28px 26px 0; }
+
+  .section-label{
+    font-size:11.5px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color:var(--stone-dark);
+    margin:0 0 14px;
+    text-align:center;
+  }
+
+  .scoop-grid{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:13px;
+    justify-items:center;
+    margin-bottom:16px;
+  }
+
+  .scoop{
+    position:relative;
+    width:56px;
+    height:56px;
+    border-radius:50%;
+    border:none;
+    cursor:pointer;
+    font-family:'Zilla Slab', serif;
+    font-weight:600;
+    font-size:17px;
+    color:var(--cream-white);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 5px 10px -3px rgba(42,27,16,0.4), inset 0 -5px 8px rgba(0,0,0,0.15), inset 0 2px 3px rgba(255,255,255,0.25);
+    transition:transform 0.15s ease, box-shadow 0.15s ease, outline-color 0.15s ease;
+    outline:2.5px solid transparent;
+    outline-offset:3px;
+  }
+  .scoop.flavor-0{ background:radial-gradient(circle at 32% 28%, #547A50, var(--forest) 60%, var(--forest-dark) 100%); }
+  .scoop.flavor-1{ background:radial-gradient(circle at 32% 28%, #C4986A, var(--oak) 60%, #7A5228 100%); }
+  .scoop.flavor-2{ background:radial-gradient(circle at 32% 28%, #C9C2B6, var(--stone) 60%, var(--stone-dark) 100%); color:var(--walnut); }
+
+  .scoop:hover{ transform:translateY(-3px) scale(1.05); }
+  .scoop:focus-visible{ outline-color:var(--walnut); }
+
+  .scoop.selected{
+    transform:translateY(-4px) scale(1.08);
+    outline-color:var(--walnut);
+  }
+  .scoop.selected::after{
+    content:"";
+    position:absolute;
+    top:-5px;
+    right:-2px;
+    width:14px;
+    height:14px;
+    background:var(--forest-light);
+    border:2px solid var(--cream);
+    border-radius:0 50% 50% 50%;
+    transform:rotate(45deg);
+    box-shadow:0 2px 4px rgba(0,0,0,0.25);
+  }
+
+  .scoop:disabled{ cursor:not-allowed; opacity:0.5; transform:none; }
+
+  .selected-line{
+    text-align:center;
+    font-size:13.5px;
+    font-weight:700;
+    color:var(--stone-dark);
+    min-height:19px;
+    margin-bottom:20px;
+  }
+  .selected-line span{ color:var(--walnut); }
+
+  .run-btn{
+    display:block;
+    width:100%;
+    padding:15px 20px;
+    border:none;
+    border-radius:999px;
+    background:var(--forest);
+    color:var(--cream-white);
+    font-family:'Manrope', sans-serif;
+    font-weight:800;
+    font-size:14.5px;
+    letter-spacing:0.4px;
+    cursor:pointer;
+    box-shadow:0 10px 20px -8px rgba(42,64,39,0.6);
+    transition:transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease, background 0.12s ease;
+  }
+  .run-btn:hover:not(:disabled){ transform:translateY(-2px); background:var(--forest-dark); }
+  .run-btn:active:not(:disabled){ transform:translateY(0); }
+  .run-btn:disabled{ opacity:0.4; cursor:not-allowed; box-shadow:none; }
+  .run-btn:focus-visible{ outline:3px solid var(--oak-dark); outline-offset:3px; }
+
+  .hint{
+    text-align:center;
+    font-size:12px;
+    color:var(--stone-dark);
+    margin:10px 0 0;
+  }
+
+  .status{
+    margin-top:16px;
+    padding:11px 13px;
+    border-radius:12px;
+    font-size:12.5px;
+    font-weight:600;
+    display:none;
+    align-items:center;
+    gap:9px;
+  }
+  .status.visible{ display:flex; }
+  .status .dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .status.sending{ background:#EFE7D3; color:var(--oak-dark); }
+  .status.sending .dot{ background:var(--oak); animation:pulse 1s ease-in-out infinite; }
+  .status.success{ background:#E4EEE1; color:var(--forest-dark); }
+  .status.success .dot{ background:var(--ok); }
+  .status.error{ background:#F6E4E1; color:#8C3B31; }
+  .status.error .dot{ background:var(--err); }
+
+  @keyframes pulse{
+    0%, 100%{ opacity:1; transform:scale(1); }
+    50%{ opacity:0.4; transform:scale(0.8); }
+  }
+
+  /* terrazzo footer strip */
+  .terrazzo{
+    margin-top:26px;
+    height:16px;
+    background-color:var(--stone-dark);
+    background-image:
+      radial-gradient(circle 2.5px at 8% 40%, var(--cream-white) 95%, transparent 100%),
+      radial-gradient(circle 1.8px at 20% 70%, var(--forest-light) 95%, transparent 100%),
+      radial-gradient(circle 2px at 33% 25%, var(--oak-light) 95%, transparent 100%),
+      radial-gradient(circle 1.5px at 47% 60%, var(--cream-white) 95%, transparent 100%),
+      radial-gradient(circle 2.3px at 61% 35%, var(--stone) 95%, transparent 100%),
+      radial-gradient(circle 1.6px at 74% 65%, var(--forest-light) 95%, transparent 100%),
+      radial-gradient(circle 2px at 87% 30%, var(--cream-white) 95%, transparent 100%),
+      radial-gradient(circle 1.8px at 95% 70%, var(--oak-light) 95%, transparent 100%);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+  }
+  @media (max-width:360px){
+    .scoop-grid{ grid-template-columns:repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+  <main class="card">
+    <div class="header">
+      <svg class="badge" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <ellipse cx="50" cy="46" rx="34" ry="30" stroke="#D9C9A3" stroke-width="2"/>
+        <path d="M20 62 C 14 70, 16 80, 24 85" stroke="#7A9868" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M21 66 C 16 65, 13 68, 12 72" stroke="#7A9868" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M23 73 C 17 73, 14 76, 13 80" stroke="#7A9868" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M80 62 C 86 70, 84 80, 76 85" stroke="#7A9868" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M79 66 C 84 65, 87 68, 88 72" stroke="#7A9868" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M77 73 C 83 73, 86 76, 87 80" stroke="#7A9868" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <text x="50" y="42" text-anchor="middle" font-family="Zilla Slab, serif" font-weight="700" font-size="13" fill="#FBF7EF" letter-spacing="0.5">DIMA</text>
+        <text x="50" y="58" text-anchor="middle" font-family="Zilla Slab, serif" font-weight="700" font-size="13" fill="#FBF7EF" letter-spacing="1.5">ICE</text>
+      </svg>
+      <p class="brand">DIMA ICE</p>
+      <p class="tagline">Monthly Automation Console</p>
+    </div>
+
+    <div class="body">
+      <p class="section-label">Pick a month</p>
+
+      <div class="scoop-grid" id="scoopGrid" role="group" aria-label="Select a month"></div>
+
+      <p class="selected-line" id="selectedLine">No month selected yet</p>
+
+      <button class="run-btn" id="runBtn" disabled>Run automation</button>
+      <p class="hint">Sends the selected month to your n8n workflow.</p>
+
+      <div class="status" id="status" role="status" aria-live="polite">
+        <span class="dot"></span>
+        <span id="statusText"></span>
+      </div>
+    </div>
+
+    <div class="terrazzo" aria-hidden="true"></div>
+  </main>
+
+<script>
+  const WEBHOOK_URL = "https://dima-ice-automation.app.n8n.cloud/webhook/4b8744b9-7d1e-4be8-963c-6bca05412a57";
+
+  const MONTHS = [
+    "January","February","March","April","May","June",
+    "July","August","September","October","November","December"
+  ];
+
+  const grid = document.getElementById('scoopGrid');
+  const selectedLine = document.getElementById('selectedLine');
+  const runBtn = document.getElementById('runBtn');
+  const statusEl = document.getElementById('status');
+  const statusText = document.getElementById('statusText');
+
+  let selectedMonth = null;
+
+  MONTHS.forEach((name, i) => {
+    const monthNum = i + 1;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `scoop flavor-${i % 3}`;
+    btn.textContent = monthNum;
+    btn.setAttribute('aria-label', name);
+    btn.addEventListener('click', () => selectMonth(monthNum, btn));
+    grid.appendChild(btn);
+  });
+
+  function selectMonth(monthNum, btn){
+    selectedMonth = monthNum;
+    document.querySelectorAll('.scoop').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedLine.innerHTML = `Selected: <span>${MONTHS[monthNum - 1]}</span>`;
+    runBtn.disabled = false;
+    setStatus(null);
+  }
+
+  function setStatus(kind, message){
+    if (!kind){ statusEl.className = 'status'; return; }
+    statusEl.className = `status visible ${kind}`;
+    statusText.textContent = message;
+  }
+
+  function setScoopsDisabled(disabled){
+    document.querySelectorAll('.scoop').forEach(b => b.disabled = disabled);
+  }
+
+  runBtn.addEventListener('click', async () => {
+    if (!selectedMonth) return;
+
+    runBtn.disabled = true;
+    setScoopsDisabled(true);
+    setStatus('sending', `Sending ${MONTHS[selectedMonth - 1]} to n8n…`);
+
+    try {
+      const res = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          month: selectedMonth,
+          monthName: MONTHS[selectedMonth - 1],
+          triggeredAt: new Date().toISOString()
+        })
+      });
+
+      if (res.ok) {
+        setStatus('success', `Automation started for ${MONTHS[selectedMonth - 1]}.`);
+      } else {
+        setStatus('error', `n8n responded with an error (status ${res.status}). Check the workflow.`);
+      }
+    } catch (err) {
+      setStatus('error', "Couldn't reach the webhook. Check your connection or the n8n workflow's CORS settings.");
+    } finally {
+      runBtn.disabled = false;
+      setScoopsDisabled(false);
+    }
+  });
+</script>
+
+</body>
+</html>
